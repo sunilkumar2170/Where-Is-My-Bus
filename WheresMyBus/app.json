@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "WheresMyBus",
+    "slug": "WheresMyBus",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0A0F1C"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wheresmybus.app",
+      "config": {
+        "googleMapsApiKey": "AIzaSyAQwrIRD4c4OKO-CGEAN528gp3jEKzidyk"
+      }
+    },
+    "android": {
+      "package": "com.wheresmybus.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0F1C",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAQwrIRD4c4OKO-CGEAN528gp3jEKzidyk"
+        }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Where Is My Bus to use your location."
+        }
+      ]
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1b9b406a-cc3e-4f74-aab7-be3f89243afb"
+      }
+    }
+  }
+}

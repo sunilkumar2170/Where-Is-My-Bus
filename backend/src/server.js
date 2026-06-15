@@ -32,6 +32,40 @@ app.use('/api/trips', tripRoutes);
 
 const stopRoutes = require('./routes/stopRoutes');
 app.use('/api/stops', stopRoutes);
+
+// ✅ Notification Route ADD KIYA
+const notificationRoutes = require('./routes/notificationRoutes');
+app.use('/api/notifications', notificationRoutes);
+
+// ✅ Test SOS Route
+app.post('/api/test-sos', async (req, res) => {
+  try {
+    const { busId } = req.body;
+    const { sendMulticast } = require('./services/notificationService');
+    
+    const parents = await prisma.user.findMany({
+      where: { role: 'PARENT', fcmToken: { not: null } }
+    });
+    
+    const tokens = parents.map(p => p.fcmToken).filter(Boolean);
+    console.log('Tokens found:', tokens.length);
+    
+    if (tokens.length > 0) {
+      await sendMulticast(
+        tokens,
+        '🚨 SOS EMERGENCY!',
+        `Bus ${busId} mein emergency!`,
+        { busId, type: 'SOS' }
+      );
+      res.json({ success: true, message: 'Notification sent!', tokenCount: tokens.length });
+    } else {
+      res.json({ success: false, message: 'Koi token nahi mila database mein' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GPS Socket
 gpsSocket(io);
 

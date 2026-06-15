@@ -14,16 +14,17 @@ model User {
   phone     String   @unique
   name      String?
   role      Role     @default(PARENT)
+  fcmToken  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Bus {
-  id        String   @id @default(uuid())
-  busNo     String   @unique
+  id         String    @id @default(uuid())
+  busNo      String    @unique
   driverName String
-  status    BusStatus @default(INACTIVE)
-  createdAt DateTime @default(now())
+  status     BusStatus @default(INACTIVE)
+  createdAt  DateTime  @default(now())
 }
 
 model LiveLocation {
@@ -33,6 +34,15 @@ model LiveLocation {
   lng       Float
   speed     Float    @default(0)
   timestamp DateTime @default(now())
+}
+
+model Stop {
+  id    String @id @default(uuid())
+  name  String
+  lat   Float
+  lng   Float
+  busId String
+  order Int
 }
 
 enum Role {
@@ -46,13 +56,4 @@ enum BusStatus {
   ACTIVE
   INACTIVE
   ON_TRIP
-}
-
-model Stop {
-  id        String   @id @default(uuid())
-  name      String
-  lat       Float
-  lng       Float
-  busId     String
-  order     Int
 }

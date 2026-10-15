@@ -175,6 +175,11 @@ const buildMapPickerHtml = (lat, lng) => `
       marker.setLatLng(e.latlng);
       sendCoords(e.latlng.lat, e.latlng.lng);
     });
+    window.panToLocation = function(la, ln) {
+      map.setView([la, ln], 17, { animate: true });
+      marker.setLatLng([la, ln]);
+      sendCoords(la, ln);
+    };
   </script>
 </body>
 </html>
@@ -1815,15 +1820,65 @@ function AdminScreenContent({ user, onLogout }) {
       </FormModal>
 
       <Modal visible={mMapPicker} animationType="slide" onRequestClose={() => setMMapPicker(false)}>
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
           <View style={c.mHead}>
-            <Text style={c.mTitle}>🗺️ Tap to Select Location</Text>
+            <Text style={c.mTitle}>🗺️ Choose Location from Map</Text>
             <TouchableOpacity onPress={() => setMMapPicker(false)} style={{ padding: 8 }}>
               <Text style={{ fontSize: 22, color: '#888' }}>✕</Text>
             </TouchableOpacity>
           </View>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#F8F9FA', borderBottomWidth: 1, borderBottomColor: '#E8EAED' }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TextInput
+                style={[c.inp, { flex: 1, backgroundColor: '#fff', marginBottom: 0 }]}
+                value={stopSearchQuery}
+                onChangeText={setStopSearchQuery}
+                placeholder="Search place name (e.g. Gandhi Chowk, Raipur)"
+                placeholderTextColor="#bbb"
+                onSubmitEditing={async () => {
+                  if (!stopSearchQuery.trim()) return;
+                  setStopSearching(true);
+                  try {
+                    const results = await searchPlaces(stopSearchQuery.trim());
+                    if (results && results.length > 0) {
+                      const top = results[0];
+                      setMapMarker({ lat: top.lat, lng: top.lng });
+                      mapPickerWebViewRef.current?.injectJavaScript(`window.panToLocation(${top.lat}, ${top.lng}); true;`);
+                      if (!fStop.name.trim()) setFStop(prev => ({ ...prev, name: top.label.split(',')[0] }));
+                    } else {
+                      Alert.alert('Not Found', 'Location nahi mili, thoda alag naam try karo');
+                    }
+                  } catch(e) {}
+                  setStopSearching(false);
+                }}
+                returnKeyType="search"
+              />
+              <TouchableOpacity
+                style={{ backgroundColor: P, borderRadius: 10, paddingHorizontal: 16, justifyContent: 'center' }}
+                onPress={async () => {
+                  if (!stopSearchQuery.trim()) return;
+                  setStopSearching(true);
+                  try {
+                    const results = await searchPlaces(stopSearchQuery.trim());
+                    if (results && results.length > 0) {
+                      const top = results[0];
+                      setMapMarker({ lat: top.lat, lng: top.lng });
+                      mapPickerWebViewRef.current?.injectJavaScript(`window.panToLocation(${top.lat}, ${top.lng}); true;`);
+                      if (!fStop.name.trim()) setFStop(prev => ({ ...prev, name: top.label.split(',')[0] }));
+                    } else {
+                      Alert.alert('Not Found', 'Location nahi mili, thoda alag naam try karo');
+                    }
+                  } catch(e) {}
+                  setStopSearching(false);
+                }}
+              >
+                {stopSearching ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: '#fff', fontWeight: 'bold' }}>🔍</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
           {mMapPicker && (
             <WebView
+              ref={mapPickerWebViewRef}
               style={{ flex: 1 }}
               originWhitelist={['*']}
               source={{ html: buildMapPickerHtml(mapMarker?.lat || 21.2514, mapMarker?.lng || 81.6296) }}
@@ -1838,8 +1893,8 @@ function AdminScreenContent({ user, onLogout }) {
             />
           )}
           <View style={{ padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E8EAED' }}>
-            <Text style={{ textAlign: 'center', color: '#666', marginBottom: 10 }}>
-              {mapMarker ? `${safeFixed(mapMarker.lat, 5)}, ${safeFixed(mapMarker.lng, 5)}` : 'Map par tap karo location select karne ke liye'}
+            <Text style={{ textAlign: 'center', color: '#666', marginBottom: 10, fontWeight: '500' }}>
+              📍 {mapMarker ? `${safeFixed(mapMarker.lat, 5)}, ${safeFixed(mapMarker.lng, 5)}` : 'Map par tap karo ya search bar use karo'}
             </Text>
             <PBtn label="✅ Confirm Location" onPress={confirmMapLocation} />
           </View>
